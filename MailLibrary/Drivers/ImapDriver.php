@@ -254,7 +254,7 @@ class ImapDriver implements IDriver
 				$text = '';
 				foreach($decoded as $part) {
 					if($part->charset !== 'UTF-8' && $part->charset !== 'default') {
-						$text .= mb_convert_encoding($part->text, 'UTF-8', $part->charset);
+						$text .= @mb_convert_encoding($part->text, 'UTF-8', $part->charset);
 					} else {
 						$text .= $part->text;
 					}
@@ -382,7 +382,9 @@ class ImapDriver implements IDriver
 	 */
 	public function copyMail($mailId, $toMailbox) {
 		if(!imap_mail_copy($this->resource, $mailId, $this->server . $this->encodeMailboxName($toMailbox), CP_UID)) {
-			throw new DriverException("Cannot copy mail to mailbox '$toMailbox': ".imap_last_error());
+			if(!imap_mail_copy($this->resource, $mailId, $this->encodeMailboxName($toMailbox), CP_UID)) {
+				throw new DriverException("Cannot copy mail to mailbox '$toMailbox': ".imap_last_error());
+			}
 		}
 	}
 
@@ -394,7 +396,9 @@ class ImapDriver implements IDriver
 	 */
 	public function moveMail($mailId, $toMailbox) {
 		if(!imap_mail_move($this->resource, $mailId, $this->server . $this->encodeMailboxName($toMailbox), CP_UID)) {
-			throw new DriverException("Cannot copy mail to mailbox '$toMailbox': ".imap_last_error());
+			if(!imap_mail_move($this->resource, $mailId, $this->encodeMailboxName($toMailbox), CP_UID)) {
+				throw new DriverException("Cannot copy mail to mailbox '$toMailbox': ".imap_last_error());
+			}
 		}
 	}
 
